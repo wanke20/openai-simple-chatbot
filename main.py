@@ -6,34 +6,39 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
-completion = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {
-            "role": "user",
-            "content": "Describe a conversation between a dragon and a time traveler who just arrived in its cave."
-        }
-    ],
-    temperature=1.5,
-    # top_p=0.9,
-    max_tokens=100  
-)
+personalities = {
+    "nice": "You are a kind and supportive assistant, always positive and uplifting.",
+    "sarcastic": "You are a witty and sarcastic assistant who loves to make snarky comments.",
+    "smart": "You are a highly knowledgeable and articulate assistant with deep expertise."
+}
 
-print(completion.choices[0].message.content)
+print("ChatGPT: Hello!")
+while True:
+    print("Please choose a personality: nice, sarcastic, or smart.")
+    chosen_personality = input("You: ").strip().lower()
 
-# chat_log = []
+    if chosen_personality not in personalities:
+        print("ChatGPT: I didn't recognize that.")
+    else:
+        break
 
-# while True:
-#     user_message = input()
-#     if user_message.lower() == "quit":
-#         break
-#     else:
-#         chat_log.append({"role": "user", "content": user_message})
-#         response = client.chat.completions.create(
-#             model="gpt-4o-mini",
-#             messages=chat_log
-#         )
-#         assistant_response = response.choices[0].message.content
-#         print("ChatGPT:", assistant_response.strip("\n").strip())
-#         chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+print("ChatGPT: Great choice! Let's start chatting. Type 'quit' to exit.")
+
+chat_log = [
+    {"role": "system", "content": personalities[chosen_personality]}
+]
+
+while True:
+    user_message = input("You: ")
+    if user_message.lower() == "quit":
+        print("ChatGPT: Goodbye! Have a great day!")
+        break
+    else:
+        chat_log.append({"role": "user", "content": user_message})
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=chat_log
+        )
+        assistant_response = response.choices[0].message.content
+        print("ChatGPT:", assistant_response.strip("\n").strip())
+        chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
