@@ -6,18 +6,10 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
-personalities = {
-    "nice": "You are a kind and supportive assistant, always positive and uplifting.",
-    "sarcastic": "You are a witty and sarcastic assistant who loves to make snarky comments.",
-    "smart": "You are a highly knowledgeable and articulate assistant with deep expertise."
-}
-
-chosen_personality = personalities["smart"]
-
 completion = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": chosen_personality},
+        {"role": "system", "content": "You are a helpful assistant."},
         {
             "role": "user",
             "content": "Who was Alan Turing?"
