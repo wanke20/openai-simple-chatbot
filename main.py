@@ -36,7 +36,7 @@ while True:
 
     chat_log.append({"role": "user", "content": [{"type": "text", "text": user_message}]})
 
-    # OpenAI API response (uncomment if needed)
+    # OpenAI API response
     openai_response = openai_client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "system", "content": roles[user_role]}] + chat_log
@@ -44,15 +44,14 @@ while True:
     openai_reply = openai_response.choices[0].message.content.strip()
     print("ChatGPT:", openai_reply, end="\n\n")
 
-    # Anthropic API response (pass system prompt separately)
+    # Anthropic API response
     anthropic_response = anthropic_client.messages.create(
         model="claude-3-7-sonnet-20250219",
         max_tokens=300,
-        system=roles[user_role],  # System instruction passed separately
+        system=roles[user_role],
         messages=chat_log
     )
 
-    # Extract text response from Claude
     claude_reply = "\n".join(block.text for block in anthropic_response.content if block.type == "text")
     print("Claude:", claude_reply)
 
