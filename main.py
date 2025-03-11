@@ -25,35 +25,36 @@ while True:
 
 print("System: Got it! I'll tailor my responses accordingly and provide links when relevant. Type 'quit' to exit.")
 
-chat_log = [
-    {"role": "system", "content": roles[user_role]}
-]
+chat_log = []
 
 while True:
     user_message = input("You: ").strip()
-    
+
     if user_message.lower() == "quit":
         print("System: Goodbye! Have a great day!")
         break
 
-    chat_log.append({"role": "user", "content": user_message})
+    chat_log.append({"role": "user", "content": [{"type": "text", "text": user_message}]})
 
-    # OpenAI API response
+    # OpenAI API response (uncomment if needed)
     openai_response = openai_client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=chat_log
+        messages=[{"role": "system", "content": roles[user_role]}] + chat_log
     )
     openai_reply = openai_response.choices[0].message.content.strip()
-    print("ChatGPT: ", openai_reply, end="\n\n")
+    print("ChatGPT:", openai_reply, end="\n\n")
 
-    # Anthropic API response
+    # Anthropic API response (pass system prompt separately)
     anthropic_response = anthropic_client.messages.create(
         model="claude-3-7-sonnet-20250219",
         max_tokens=300,
-        messages=[{"role": "user", "content": [{"type": "text", "text": user_message}]}]
+        system=roles[user_role],  # System instruction passed separately
+        messages=chat_log
     )
-    claude_reply = "\n".join(block.text for block in anthropic_response.content if block.type == "text")
-    print("Claude: ", claude_reply)
 
-    chat_log.append({"role": "assistant", "content": openai_reply})
-    chat_log.append({"role": "assistant", "content": claude_reply})
+    # Extract text response from Claude
+    claude_reply = "\n".join(block.text for block in anthropic_response.content if block.type == "text")
+    print("Claude:", claude_reply)
+
+    chat_log.append({"role": "assistant", "content": [{"type": "text", "text": claude_reply}]})
+    chat_log.append({"role": "assistant", "content": [{"type": "text", "text": openai_reply}]})
