@@ -1,44 +1,60 @@
-import os
+import os, json
 from dotenv import load_dotenv
 from openai import OpenAI
+import anthropic
 
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+openai_api_key = os.getenv("OPENAI_API_KEY")
+anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
-personalities = {
-    "nice": "You are a kind and supportive assistant, always positive and uplifting.",
-    "sarcastic": "You are a witty and sarcastic assistant who loves to make snarky comments.",
-    "smart": "You are a highly knowledgeable and articulate assistant with deep expertise."
-}
+openai_client = OpenAI(api_key=openai_api_key)
+anthropic_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
-print("ChatGPT: Hello!")
+with open("prompts.json", "r") as file:
+    roles = json.load(file)
+
+print("System: Hello!")
 while True:
-    print("Please choose a personality: nice, sarcastic, or smart.")
-    chosen_personality = input("You: ").strip().lower()
+    print("Please choose your role: student, tutor, or administrator.")
+    user_role = input("You: ").strip().lower()
 
-    if chosen_personality not in personalities:
-        print("ChatGPT: I didn't recognize that.")
+    if user_role not in roles:
+        print("System: I didn't recognize that.")
     else:
         break
 
-print("ChatGPT: Great choice! Let's start chatting. Type 'quit' to exit.")
+print("System: Got it! I'll tailor my responses accordingly and provide links when relevant. Type 'quit' to exit.")
 
 chat_log = [
-    {"role": "system", "content": personalities[chosen_personality]}
+    {"role": "system", "content": roles[user_role]}
 ]
 
 while True:
-    user_message = input("You: ")
+    user_message = input("You: ").strip()
+    
     if user_message.lower() == "quit":
-        print("ChatGPT: Goodbye! Have a great day!")
+        print("System: Goodbye! Have a great day!")
         break
-    else:
-        chat_log.append({"role": "user", "content": user_message})
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=chat_log
-        )
-        assistant_response = response.choices[0].message.content
-        print("ChatGPT:", assistant_response.strip("\n").strip())
-        chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+
+    chat_log.append({"role": "user", "content": user_message})
+
+    # OpenAI API Response
+    openai_response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=chat_log
+    )
+    openai_reply = openai_response.choices[0].message.content.strip()
+    print("ChatGPT: ", openai_reply, end="\n\n")
+
+    # Anthropic API Response
+    anthropic_response = anthropic_client.messages.create(
+        model="claude-3-7-sonnet-20250219",
+        max_tokens=300,
+        messages=[{"role": "user", "content": [{"type": "text", "text": user_message}]}]
+    )
+
+    claude_reply = "\n".join(block.text for block in anthropic_response.content if block.type == "text")
+    print("Claude: ", claude_reply)
+
+    chat_log.append({"role": "assistant", "content": openai_reply})
+    chat_log.append({"role": "assistant", "content": claude_reply})

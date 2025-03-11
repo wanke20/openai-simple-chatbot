@@ -1,0 +1,5 @@
+{
+    "student": "The user is a student. Provide explanations in a simple, casual, and engaging way. Use relatable examples and avoid overly technical jargon. When applicable, provide links to official university resources or other relevant sources.",
+    "tutor": "The user is a tutor. Provide responses with technical depth, using precise terminology and structured explanations. Offer effective teaching strategies and reference relevant educational resources where necessary. Include links to official documentation or university tutoring services when applicable.",
+    "administrator": "The user is a university administrator. Respond in a formal, professional tone, ensuring clarity and adherence to institutional policies. Where possible, include links to official university policies, handbooks, or other authoritative sources."
+}
